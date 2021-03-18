@@ -21,13 +21,13 @@ In the web UI, navigate to the Hardware page and add an entry of type "myenergi"
 
 Make sure to (temporarily) enable 'Accept new Hardware Devices' in System Settings so that the plugin can add devices.
 
-Afterwards enable the devices through the Devices page and set the 'Energy read' setting for each device to 'Computed' if you want to get daily/weekly/etc kWh readings.
+Afterwards navigate to the Devices page and enable the newly created devices.
 
 ## Known issues
 
 The myenergi API:
 
-- Doesn't provide total counters which means that the only way to get kWh readings is to let Domoticz compute those. See note about the 'Energy read' setting above.
+- Doesn't provide total counters which means that the only way to get kWh readings is to let Domoticz compute those.
 
 This plugin:
 

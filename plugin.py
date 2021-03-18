@@ -61,29 +61,15 @@ class BasePlugin:
         else:
             Domoticz.Debugging(0)
 
-        # TODO
-        #
-        # Below devices can be set to 'Energy read: Computed' to let Domoticz calculate the amount of (k)Wh based on the measured number of Watts.
-        #
-        # But...
-        #
-        # A) It would be better (more accurate) to provide the counters based on myenergi data. Unfortunately the API doesn't provide such a counter.
-        #
-        # B) When setting 'EnergyMeterMode' to '1' in the options something goes wrong. Domoticz crashes as soon as it tries to update such a meter.
-        #    This crash also happens when manually updating the meters 'too soon'; i.e. immediately after creation. An initial value is needed?
-        #
-        # For now the meters have to be manually updated to 'Energy read: Computed' after creation by the plugin to get kWh counters.
-        #
-        # See https://github.com/domoticz/domoticz/issues/4733
-
+        # TODO - Find a way to get total counters from the API instead of letting Domoticz compute
         if len(Devices) < 1:
-            Domoticz.Device(Name="Generation", Unit=1, Type=243, Subtype=29, Switchtype=4).Create()
+            Domoticz.Device(Name="Generation", Unit=1, TypeName='kWh', Switchtype=4, Options={'EnergyMeterMode':'1'}).Create()
         if len(Devices) < 2:
-            Domoticz.Device(Name="Grid", Unit=2, Type=243, Subtype=29, Switchtype=0).Create()
+            Domoticz.Device(Name="Grid", Unit=2, TypeName='kWh', Options={'EnergyMeterMode':'1'}).Create()
         if len(Devices) < 3:
-            Domoticz.Device(Name="Car Charging", Unit=3, Type=243, Subtype=29, Switchtype=0).Create()
+            Domoticz.Device(Name="Car Charging", Unit=3, TypeName='kWh', Options={'EnergyMeterMode':'1'}).Create()
         if len(Devices) < 4:
-            Domoticz.Device(Name="Home Consumption", Unit=4, Type=243, Subtype=29, Switchtype=0).Create()
+            Domoticz.Device(Name="Home Consumption", Unit=4, TypeName='kWh', Options={'EnergyMeterMode':'1'}).Create()
 
         DumpConfigToLog()
 
@@ -150,7 +136,7 @@ class BasePlugin:
                     if zappi_hom_watt <0:
                         Domoticz.Log("Negative home consumption detected; ignoring reading (%s)" % zappi_hom_watt)
                     else:
-                        # TODO - Find a way to get total counters from the API instead of using dummy 0 values
+                        # TODO - Find a way to get total counters from the API instead of letting Domoticz compute
                         Devices[1].Update(nValue=0, sValue=str(zappi_gen_watt)+";0")
                         Devices[2].Update(nValue=0, sValue=str(zappi_grd_watt)+";0")
                         Devices[3].Update(nValue=0, sValue=str(zappi_div_watt)+";0")
