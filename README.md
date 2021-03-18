@@ -56,5 +56,5 @@ sudo /etc/init.d/domoticz.sh restart
 
 Based on
 
-https://github.com/rklomp/Domoticz-SMA-SunnyBoy
+https://github.com/rklomp/Domoticz-SMA-SunnyBoy \
 https://github.com/twonk/MyEnergi-App-Api
