@@ -27,7 +27,7 @@ Afterwards navigate to the Devices page and enable the newly created devices.
 
 The myenergi API:
 
-- Doesn't provide total counters which means that the only way to get kWh readings is to let Domoticz compute those.
+- Doesn't provide total counters which means that the only way to get kWh readings is to let Domoticz compute those. The figures won't be 100% correct because of that.
 
 This plugin:
 
