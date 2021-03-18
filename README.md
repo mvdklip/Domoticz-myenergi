@@ -25,12 +25,9 @@ Afterwards navigate to the Devices page and enable the newly created devices.
 
 ## Known issues
 
-The myenergi API:
-
-- Doesn't provide total counters which means that the only way to get kWh readings is to let Domoticz compute those. The figures won't be 100% correct because of that.
-
 This plugin:
 
+- Shows kWh readings computed by Domoticz which will be ~99% correct. To get better readings myenergi would need to provide total kWh counters in their API. AFAIK they only provide per minute and per hour counters.
 - Doesn't distinguish individual devices; figures for multiple Zappi's are added up.
 - Connects to the myenergi backend and thus needs a working internet connection.
 - Only takes Zappi devices into account for now; Eddi devices are ignored.
