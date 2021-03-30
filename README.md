@@ -32,10 +32,6 @@ This plugin:
 - Connects to the myenergi backend and thus needs a working internet connection.
 - Only takes Zappi devices into account for now; Eddi devices are ignored.
 
-Domoticz:
-
-- Seems to incorrectly display daily values for the computed total kWh values. This likely screws up the displayed 'Grid' values. See https://github.com/domoticz/domoticz/issues/4736
-
 ## Updating
 
 Like other plugins, in the Domoticz-myenergi directory:

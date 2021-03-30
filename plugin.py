@@ -8,7 +8,7 @@
 # https://github.com/twonk/MyEnergi-App-Api
 
 """
-<plugin key="myenergi" name="myenergi" author="mvdklip" version="1.0.0">
+<plugin key="myenergi" name="myenergi" author="mvdklip" version="1.1.0">
     <description>
         <h2>myenergi Plugin</h2><br/>
         <h3>Features</h3>
@@ -65,11 +65,13 @@ class BasePlugin:
         if len(Devices) < 1:
             Domoticz.Device(Name="Generation", Unit=1, TypeName='kWh', Switchtype=4, Options={'EnergyMeterMode':'1'}).Create()
         if len(Devices) < 2:
-            Domoticz.Device(Name="Grid", Unit=2, TypeName='kWh', Options={'EnergyMeterMode':'1'}).Create()
+            Domoticz.Device(Name="Grid Import", Unit=2, TypeName='kWh', Options={'EnergyMeterMode':'1'}).Create()
         if len(Devices) < 3:
             Domoticz.Device(Name="Car Charging", Unit=3, TypeName='kWh', Options={'EnergyMeterMode':'1'}).Create()
         if len(Devices) < 4:
             Domoticz.Device(Name="Home Consumption", Unit=4, TypeName='kWh', Options={'EnergyMeterMode':'1'}).Create()
+        if len(Devices) < 5:
+            Domoticz.Device(Name="Grid Export", Unit=5, TypeName='kWh', Options={'EnergyMeterMode':'1'}).Create()
 
         DumpConfigToLog()
 
@@ -138,9 +140,16 @@ class BasePlugin:
                     else:
                         # TODO - Find a way to get total counters from the API instead of letting Domoticz compute
                         Devices[1].Update(nValue=0, sValue=str(zappi_gen_watt)+";0")
-                        Devices[2].Update(nValue=0, sValue=str(zappi_grd_watt)+";0")
                         Devices[3].Update(nValue=0, sValue=str(zappi_div_watt)+";0")
                         Devices[4].Update(nValue=0, sValue=str(zappi_hom_watt)+";0")
+
+                        # Work around negative kWh Domoticz issue #4736 using separate import and export grid meters
+                        if (zappi_grd_watt < 0):
+                            Devices[5].Update(nValue=0, sValue=str(abs(zappi_grd_watt))+";0")   # (-) Grid export
+                            Devices[2].Update(nValue=0, sValue="0;0")
+                        else:
+                            Devices[2].Update(nValue=0, sValue=str(zappi_grd_watt)+";0")        # (+) Grid import
+                            Devices[5].Update(nValue=0, sValue="0;0")
 
                     break
 
