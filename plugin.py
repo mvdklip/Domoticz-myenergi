@@ -8,7 +8,7 @@
 # https://github.com/twonk/MyEnergi-App-Api
 
 """
-<plugin key="myenergi" name="myenergi" author="mvdklip" version="1.1.1">
+<plugin key="myenergi" name="myenergi" author="mvdklip" version="1.1.2">
     <description>
         <h2>myenergi Plugin</h2><br/>
         <h3>Features</h3>
@@ -50,6 +50,7 @@ class BasePlugin:
     baseUrl = "https://director.myenergi.net"
     headers = {'Content-Type': 'application/json', 'Accept': 'application/json'}
     maxAttempts = 3
+    httpTimeout = 1
 
     def __init__(self):
         return
@@ -87,9 +88,9 @@ class BasePlugin:
             attempt = 1
 
             while True:
-                if 1 < attempt < self.maxAttempts:
+                if attempt <= self.maxAttempts:
                     Domoticz.Debug("Previous attempt failed, trying again...")
-                if attempt >= self.maxAttempts:
+                else:
                     Domoticz.Error("Failed to retrieve data from %s, cancelling..." % self.baseUrl)
                     break
                 attempt += 1
@@ -101,7 +102,7 @@ class BasePlugin:
                         url,
                         auth=requests.auth.HTTPDigestAuth(Parameters["Username"], Parameters["Password"]),
                         headers=self.headers,
-                        timeout=1,
+                        timeout=self.httpTimeout,
                     )
                     if 'x_myenergi-asn' in r.headers:
                         self.baseUrl = "https://%s" % r.headers['x_myenergi-asn']
