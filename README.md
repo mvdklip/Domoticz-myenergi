@@ -1,7 +1,7 @@
 # Domoticz-myenergi
 Domoticz plugin to get myenergi information
 
-Tested with Python version 3.8, Domoticz version 2020.2
+Tested with Python version 3.8, Domoticz versions 2020.2 and 2021.1
 
 ## Prerequisites
 

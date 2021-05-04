@@ -8,7 +8,7 @@
 # https://github.com/twonk/MyEnergi-App-Api
 
 """
-<plugin key="myenergi" name="myenergi" author="mvdklip" version="1.1.0">
+<plugin key="myenergi" name="myenergi" author="mvdklip" version="1.1.1">
     <description>
         <h2>myenergi Plugin</h2><br/>
         <h3>Features</h3>
@@ -101,6 +101,7 @@ class BasePlugin:
                         url,
                         auth=requests.auth.HTTPDigestAuth(Parameters["Username"], Parameters["Password"]),
                         headers=self.headers,
+                        timeout=1,
                     )
                     if 'x_myenergi-asn' in r.headers:
                         self.baseUrl = "https://%s" % r.headers['x_myenergi-asn']
