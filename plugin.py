@@ -8,7 +8,7 @@
 # https://github.com/twonk/MyEnergi-App-Api
 
 """
-<plugin key="myenergi" name="myenergi" author="mvdklip" version="1.1.2">
+<plugin key="myenergi" name="myenergi" author="mvdklip" version="1.1.3">
     <description>
         <h2>myenergi Plugin</h2><br/>
         <h3>Features</h3>
@@ -133,25 +133,23 @@ class BasePlugin:
                                     zappi_grd_watt += device['grd']
                                 if 'div' in device:
                                     zappi_div_watt += device['div']
-                            zappi_hom_watt = (
-                                zappi_grd_watt + zappi_gen_watt - zappi_div_watt
+                            zappi_hom_watt = max(
+                                zappi_grd_watt + zappi_gen_watt - zappi_div_watt,
+                                0
                             )
 
-                    if zappi_hom_watt <0:
-                        Domoticz.Log("Negative home consumption detected; ignoring reading (%s)" % zappi_hom_watt)
-                    else:
-                        # TODO - Find a way to get total counters from the API instead of letting Domoticz compute
-                        Devices[1].Update(nValue=0, sValue=str(zappi_gen_watt)+";0")
-                        Devices[3].Update(nValue=0, sValue=str(zappi_div_watt)+";0")
-                        Devices[4].Update(nValue=0, sValue=str(zappi_hom_watt)+";0")
+                    # TODO - Find a way to get total counters from the API instead of letting Domoticz compute
+                    Devices[1].Update(nValue=0, sValue=str(zappi_gen_watt)+";0")
+                    Devices[3].Update(nValue=0, sValue=str(zappi_div_watt)+";0")
+                    Devices[4].Update(nValue=0, sValue=str(zappi_hom_watt)+";0")
 
-                        # Work around negative kWh Domoticz issue #4736 using separate import and export grid meters
-                        if (zappi_grd_watt < 0):
-                            Devices[5].Update(nValue=0, sValue=str(abs(zappi_grd_watt))+";0")   # (-) Grid export
-                            Devices[2].Update(nValue=0, sValue="0;0")
-                        else:
-                            Devices[2].Update(nValue=0, sValue=str(zappi_grd_watt)+";0")        # (+) Grid import
-                            Devices[5].Update(nValue=0, sValue="0;0")
+                    # Work around negative kWh Domoticz issue #4736 using separate import and export grid meters
+                    if (zappi_grd_watt < 0):
+                        Devices[5].Update(nValue=0, sValue=str(abs(zappi_grd_watt))+";0")   # (-) Grid export
+                        Devices[2].Update(nValue=0, sValue="0;0")
+                    else:
+                        Devices[2].Update(nValue=0, sValue=str(zappi_grd_watt)+";0")        # (+) Grid import
+                        Devices[5].Update(nValue=0, sValue="0;0")
 
                     break
 
