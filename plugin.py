@@ -8,7 +8,7 @@
 # https://github.com/twonk/MyEnergi-App-Api
 
 """
-<plugin key="myenergi" name="myenergi" author="mvdklip" version="1.1.3">
+<plugin key="myenergi" name="myenergi" author="mvdklip" version="1.1.4">
     <description>
         <h2>myenergi Plugin</h2><br/>
         <h3>Features</h3>
@@ -89,7 +89,8 @@ class BasePlugin:
 
             while True:
                 if attempt <= self.maxAttempts:
-                    Domoticz.Debug("Previous attempt failed, trying again...")
+                    if attempt > 1:
+                        Domoticz.Debug("Previous attempt failed, trying again...")
                 else:
                     Domoticz.Error("Failed to retrieve data from %s, cancelling..." % self.baseUrl)
                     break
@@ -105,11 +106,19 @@ class BasePlugin:
                         timeout=self.httpTimeout,
                     )
                     if 'x_myenergi-asn' in r.headers:
-                        self.baseUrl = "https://%s" % r.headers['x_myenergi-asn']
-                        Domoticz.Debug("Base URL is set to %s" % self.baseUrl)
+                        newUrl = "https://%s" % r.headers['x_myenergi-asn']
+                        if (newUrl != self.baseUrl):
+                            self.baseUrl = "https://%s" % r.headers['x_myenergi-asn']
+                            Domoticz.Debug("Base URL has changed to %s" % self.baseUrl)
+                            break
+                    r.raise_for_status()
                     j = r.json()
                 except Exception as e:
-                    Domoticz.Log("No data from %s; %s" % (url, e))
+                    if r.status_code == 401:
+                        Domoticz.Error("Unauthorized! Please check hub serial and password settings!")
+                        break
+                    else:
+                        Domoticz.Log("No data from %s; %s" % (url, e))
                 else:
                     Domoticz.Debug("Received data: %s" % j)
 
