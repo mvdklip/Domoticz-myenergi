@@ -8,7 +8,7 @@
 # https://github.com/twonk/MyEnergi-App-Api
 
 """
-<plugin key="myenergi" name="myenergi" author="mvdklip" version="1.1.4">
+<plugin key="myenergi" name="myenergi" author="mvdklip" version="1.1.5">
     <description>
         <h2>myenergi Plugin</h2><br/>
         <h3>Features</h3>
@@ -50,7 +50,7 @@ class BasePlugin:
     baseUrl = "https://director.myenergi.net"
     headers = {'Content-Type': 'application/json', 'Accept': 'application/json'}
     maxAttempts = 3
-    httpTimeout = 1
+    httpTimeout = 3
 
     def __init__(self):
         return
@@ -93,10 +93,11 @@ class BasePlugin:
                         Domoticz.Debug("Previous attempt failed, trying again...")
                 else:
                     Domoticz.Error("Failed to retrieve data from %s, cancelling..." % self.baseUrl)
-                    break
+                    break # while True
                 attempt += 1
 
                 url = "%s/cgi-jstatus-*" % self.baseUrl
+                r = None
 
                 try:
                     r = requests.get(
@@ -110,13 +111,13 @@ class BasePlugin:
                         if (newUrl != self.baseUrl):
                             self.baseUrl = "https://%s" % r.headers['x_myenergi-asn']
                             Domoticz.Debug("Base URL has changed to %s" % self.baseUrl)
-                            break
+                            break # while True
                     r.raise_for_status()
                     j = r.json()
                 except Exception as e:
-                    if r.status_code == 401:
+                    if r and r.status_code == 401:
                         Domoticz.Error("Unauthorized! Please check hub serial and password settings!")
-                        break
+                        break # while True
                     else:
                         Domoticz.Log("No data from %s; %s" % (url, e))
                 else:
@@ -160,7 +161,7 @@ class BasePlugin:
                         Devices[2].Update(nValue=0, sValue=str(zappi_grd_watt)+";0")        # (+) Grid import
                         Devices[5].Update(nValue=0, sValue="0;0")
 
-                    break
+                    break # while True
 
         self.lastPolled += 1
         self.lastPolled %= int(Parameters["Mode3"])
