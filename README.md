@@ -14,6 +14,7 @@ Assuming that domoticz directory is installed in your home directory.
 ```bash
 cd ~/domoticz/plugins
 git clone https://github.com/mvdklip/Domoticz-myenergi
+sudo apt-get install python3-requests
 # restart domoticz:
 sudo /etc/init.d/domoticz.sh restart
 ```
