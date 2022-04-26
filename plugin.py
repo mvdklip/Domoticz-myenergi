@@ -8,7 +8,7 @@
 # https://github.com/twonk/MyEnergi-App-Api
 
 """
-<plugin key="myenergi" name="myenergi" author="mvdklip" version="1.1.5">
+<plugin key="myenergi" name="myenergi" author="mvdklip" version="1.2.0">
     <description>
         <h2>myenergi Plugin</h2><br/>
         <h3>Features</h3>
@@ -64,7 +64,7 @@ class BasePlugin:
 
         # TODO - Find a way to get total counters from the API instead of letting Domoticz compute
         if len(Devices) < 1:
-            Domoticz.Device(Name="Generation", Unit=1, TypeName='kWh', Switchtype=4, Options={'EnergyMeterMode':'1'}).Create()
+            Domoticz.Device(Name="PV Generation", Unit=1, TypeName='kWh', Switchtype=4, Options={'EnergyMeterMode':'1'}).Create()
         if len(Devices) < 2:
             Domoticz.Device(Name="Grid Import", Unit=2, TypeName='kWh', Options={'EnergyMeterMode':'1'}).Create()
         if len(Devices) < 3:
@@ -73,6 +73,10 @@ class BasePlugin:
             Domoticz.Device(Name="Home Consumption", Unit=4, TypeName='kWh', Options={'EnergyMeterMode':'1'}).Create()
         if len(Devices) < 5:
             Domoticz.Device(Name="Grid Export", Unit=5, TypeName='kWh', Options={'EnergyMeterMode':'1'}).Create()
+        if len(Devices) < 6:
+            Domoticz.Device(Name="Grid Voltage", Unit=6, TypeName='Voltage').Create()
+        if len(Devices) < 7:
+            Domoticz.Device(Name="PV Self-consumption", Unit=7, TypeName='kWh', Options={'EnergyMeterMode':'1'}).Create()
 
         DumpConfigToLog()
 
@@ -123,10 +127,14 @@ class BasePlugin:
                 else:
                     Domoticz.Debug("Received data: %s" % j)
 
-                    zappi_gen_watt = 0                              # Generation (W)
-                    zappi_grd_watt = 0                              # Grid (W)
+                    grid_pwr = 0                                    # Grid Import/Export (W)
+                    grid_vol = 0                                    # Grid Voltage (V)
+
+                    zappi_gep_watt = 0                              # PV Generation Positive (W)
+                    zappi_gen_watt = 0                              # PV Generation Negative (W)
                     zappi_div_watt = 0                              # Car Charging (W)
                     zappi_hom_watt = 0                              # Home Consumption (W)
+                    zappi_slf_watt = 0                              # PV Self-consumption (W)
 
                     for data in j:
 
@@ -137,29 +145,35 @@ class BasePlugin:
                         # Zappi
                         if 'zappi' in data:
                             for device in data['zappi']:
+                                # Grid readings
+                                if 'grd' in device:
+                                    grid_pwr = device['grd']
+                                if 'vol' in device:
+                                    grid_vol = device['vol'] / 10
+                                # Zappi readings
+                                if 'gep' in device:
+                                    zappi_gen_watt += device['gep']
                                 if 'gen' in device:
                                     zappi_gen_watt += device['gen']
-                                if 'grd' in device:
-                                    zappi_grd_watt += device['grd']
                                 if 'div' in device:
                                     zappi_div_watt += device['div']
-                            zappi_hom_watt = max(
-                                zappi_grd_watt + zappi_gen_watt - zappi_div_watt,
-                                0
-                            )
-
-                    # TODO - Find a way to get total counters from the API instead of letting Domoticz compute
-                    Devices[1].Update(nValue=0, sValue=str(zappi_gen_watt)+";0")
-                    Devices[3].Update(nValue=0, sValue=str(zappi_div_watt)+";0")
-                    Devices[4].Update(nValue=0, sValue=str(zappi_hom_watt)+";0")
+                            zappi_hom_watt = (grid_pwr + zappi_gen_watt) - (zappi_div_watt + zappi_gep_watt)
+                            zappi_slf_watt = max(zappi_gen_watt - zappi_gep_watt + min(grid_pwr, 0), 0)
 
                     # Work around negative kWh Domoticz issue #4736 using separate import and export grid meters
-                    if (zappi_grd_watt < 0):
-                        Devices[5].Update(nValue=0, sValue=str(abs(zappi_grd_watt))+";0")   # (-) Grid export
+                    if (grid_pwr < 0):
+                        Devices[5].Update(nValue=0, sValue=str(abs(grid_pwr))+";0")   # (-) Grid Export
                         Devices[2].Update(nValue=0, sValue="0;0")
                     else:
-                        Devices[2].Update(nValue=0, sValue=str(zappi_grd_watt)+";0")        # (+) Grid import
+                        Devices[2].Update(nValue=0, sValue=str(grid_pwr)+";0")        # (+) Grid Import
                         Devices[5].Update(nValue=0, sValue="0;0")
+                    Devices[6].Update(nValue=0, sValue=str(grid_vol)+";0")
+
+                    # TODO - Find a way to get total counters from the API instead of letting Domoticz compute
+                    Devices[1].Update(nValue=0, sValue=str(zappi_gen_watt - zappi_gep_watt)+";0")
+                    Devices[3].Update(nValue=0, sValue=str(zappi_div_watt)+";0")
+                    Devices[4].Update(nValue=0, sValue=str(zappi_hom_watt)+";0")
+                    Devices[7].Update(nValue=0, sValue=str(zappi_slf_watt)+";0")
 
                     break # while True
 
